@@ -1,0 +1,277 @@
+.wiki-old-content {
+  color: #e4e4e7;
+  line-height: 1.8;
+}
+
+/* Title page */
+.wiki-old-content .CharOverride-1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.wiki-old-content .CharOverride-2 {
+  font-style: italic;
+  color: #a1a1aa;
+}
+
+.wiki-old-content .CharOverride-3 {
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.wiki-old-content .CharOverride-4 {
+  color: #a1a1aa;
+}
+
+.wiki-old-content .CharOverride-5 {
+  font-style: italic;
+}
+
+.wiki-old-content .CharOverride-6 {
+  color: #a1a1aa;
+  font-size: 0.875rem;
+}
+
+.wiki-old-content .CharOverride-7 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.wiki-old-content .CharOverride-8 {
+  font-style: italic;
+  color: #a1a1aa;
+}
+
+/* Title page containers */
+.wiki-old-content #_idContainer000,
+.wiki-old-content #_idContainer001,
+.wiki-old-content #_idContainer002 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Table of contents */
+.wiki-old-content #_idContainer003 {
+  border-top: 1px solid #3f3f46;
+  border-bottom: 1px solid #3f3f46;
+  padding: 2rem 0;
+  margin: 2rem 0;
+}
+
+.wiki-old-content [class^="Table-of-Content"] {
+  margin: 0;
+  padding: 0.15rem 0;
+  color: #a1a1aa;
+  font-size: 0.875rem;
+}
+
+.wiki-old-content .Table-of-Content_TOC-Chapter-Name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #e4e4e7;
+  margin-top: 1rem;
+}
+
+.wiki-old-content .Table-of-Content_TOC-Heading {
+  padding-left: 1rem;
+}
+
+.wiki-old-content .Table-of-Content_TOC-SubHeading {
+  padding-left: 2rem;
+}
+
+.wiki-old-content .Table-of-Content_TOC-Sidebar-Heading {
+  padding-left: 3rem;
+  font-style: italic;
+}
+
+.wiki-old-content .Table-of-Content_TOC-Sidebar-Heading-Topic {
+  padding-left: 4rem;
+  font-style: italic;
+  font-size: 0.8125rem;
+}
+
+.wiki-old-content [class^="Table-of-Content"] a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.wiki-old-content [class^="Table-of-Content"] a:hover {
+  color: #e4e4e7;
+}
+
+/* Opening quote */
+.wiki-old-content .eBook_Quote {
+  border-left: 3px solid #3f3f46;
+  padding-left: 1.25rem;
+  margin: 2rem 0 0.5rem;
+  color: #a1a1aa;
+  font-style: italic;
+  line-height: 1.7;
+}
+
+.wiki-old-content .eBook_Quote-Author {
+  color: #71717a;
+  font-size: 0.875rem;
+  margin-bottom: 2rem;
+  padding-left: 1.25rem;
+}
+
+/* Image */
+.wiki-old-content ._idGenObjectLayout-1 {
+  display: none;
+}
+
+/* Chapter structure */
+.wiki-old-content .eBook_Chapter-Name {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 3rem 0 0.75rem;
+  color: #fafafa;
+  letter-spacing: -0.01em;
+}
+
+.wiki-old-content .eBook_Chapter-Synopsis {
+  color: #a1a1aa;
+  font-style: italic;
+  margin-bottom: 2rem;
+  line-height: 1.7;
+  border-left: 3px solid #3f3f46;
+  padding-left: 1.25rem;
+}
+
+.wiki-old-content .eBook_Heading {
+  font-size: 1.375rem;
+  font-weight: 600;
+  margin: 2.5rem 0 0.75rem;
+  color: #fafafa;
+}
+
+.wiki-old-content .eBook_SubHeading {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 2rem 0 0.5rem;
+  color: #e4e4e7;
+}
+
+.wiki-old-content .eBook_Body {
+  margin-bottom: 1rem;
+}
+
+/* Emphasis and inline styles */
+.wiki-old-content .Emphasis {
+  font-style: italic;
+}
+
+.wiki-old-content .Sidebar-Concept {
+  color: #60a5fa;
+}
+
+.wiki-old-content .Cross-Reference {
+  font-size: 0.75rem;
+  color: #71717a;
+}
+
+.wiki-old-content .Next-Arrow {
+  display: none;
+}
+
+/* Sidebar definitions */
+.wiki-old-content .Sidebar_Sidebar-Heading {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 2rem 0 0.25rem;
+  padding: 1rem 1.25rem 0;
+  border-left: 3px solid #60a5fa;
+  color: #60a5fa;
+}
+
+.wiki-old-content .Sidebar_Sidebar-Heading-Topic {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  margin: 1.5rem 0 0.25rem;
+  padding: 0.75rem 1.25rem 0;
+  border-left: 3px solid #60a5fa;
+  color: #93c5fd;
+}
+
+.wiki-old-content .Sidebar_Sidebar-Body {
+  padding-left: 1.25rem;
+  border-left: 3px solid #60a5fa;
+  color: #d4d4d8;
+  margin-bottom: 0.5rem;
+  font-size: 0.9375rem;
+}
+
+.wiki-old-content .Sidebar_Syllogism {
+  padding-left: 1.25rem;
+  border-left: 3px solid #60a5fa;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.875rem;
+  color: #d4d4d8;
+  white-space: pre;
+  margin: 0.25rem 0;
+}
+
+/* Call-outs */
+.wiki-old-content .eBook_Call-Out {
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.0625rem;
+  color: #fafafa;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  border-top: 1px solid #3f3f46;
+  border-bottom: 1px solid #3f3f46;
+}
+
+/* Embellishment (decorative separator) */
+.wiki-old-content .eBook_Embellishment {
+  text-align: center;
+  color: #52525b;
+  margin: 1.5rem 0;
+  font-size: 0.875rem;
+}
+
+/* Variable font (used in math formulas) */
+.wiki-old-content .variable-font {
+  font-family: var(--font-geist-mono), monospace;
+  font-style: italic;
+}
+
+/* Disable all links in book content */
+.wiki-old-content a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Override InDesign paragraph centering */
+.wiki-old-content .ParaOverride-1 {
+  text-align: center;
+}
+
+.wiki-old-content .ParaOverride-2 {
+  text-align: center;
+}
+
+.wiki-old-content .ParaOverride-3 {
+  text-align: left;
+}
+
+.wiki-old-content .ParaOverride-4 {
+  text-align: left;
+}
+
+/* Reset InDesign container borders/frames */
+.wiki-old-content .Basic-Text-Frame {
+  margin-bottom: 0.5rem;
+}
+
+/* Empty ordered list from InDesign export */
+.wiki-old-content ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}

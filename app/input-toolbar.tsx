@@ -41,7 +41,7 @@ export default function InputToolbar({
   }
 
   return (
-    <footer className="border-t border-zinc-700 px-4 py-4">
+    <footer className="border-t border-border px-4 py-4">
       <form
         onSubmit={handleSubmit}
         className="max-w-3xl mx-auto flex gap-3 items-end"
@@ -51,7 +51,7 @@ export default function InputToolbar({
             value={model}
             onChange={(e) => setModel(e.target.value)}
             disabled={modelLocked}
-            className="appearance-none bg-zinc-800 border border-zinc-600 rounded-xl pl-3 pr-9 h-12 text-sm text-zinc-200 focus:outline-none focus:border-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="appearance-none bg-input border border-border-input rounded-xl pl-3 pr-9 h-12 text-sm text-text-primary focus:outline-none focus:border-text-muted disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {MODELS.map((m) => (
               <option key={m.id} value={m.id}>
@@ -60,7 +60,7 @@ export default function InputToolbar({
             ))}
           </select>
           <svg
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400"
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -82,12 +82,12 @@ export default function InputToolbar({
           rows={1}
           disabled={loading}
           style={{ height: INPUT_BASE_HEIGHT }}
-          className="flex-1 bg-zinc-800 border border-zinc-600 rounded-xl px-4 py-3 text-zinc-100 resize-none focus:outline-none focus:border-zinc-400 disabled:opacity-50 placeholder:text-zinc-500"
+          className="flex-1 bg-input border border-border-input rounded-xl px-4 py-3 text-text-primary resize-none focus:outline-none focus:border-text-muted disabled:opacity-50 placeholder:text-text-muted"
         />
         <button
           type="submit"
           disabled={loading || !input.trim()}
-          className="bg-white hover:bg-zinc-200 disabled:opacity-40 disabled:hover:bg-white text-zinc-900 rounded-xl px-5 h-12 font-medium transition-colors"
+          className="bg-btn hover:bg-btn-hover disabled:opacity-40 disabled:hover:bg-btn text-btn-text rounded-xl px-5 h-12 font-medium transition-colors"
         >
           Send
         </button>

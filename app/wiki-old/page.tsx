@@ -16,7 +16,7 @@ export default function Wiki() {
   }, []);
 
   return (
-    <div className="h-full overflow-y-auto bg-zinc-900">
+    <div className="h-full overflow-y-auto bg-page">
       <article
         className="wiki-old-content max-w-3xl mx-auto px-6 py-10"
         dangerouslySetInnerHTML={{ __html: html }}

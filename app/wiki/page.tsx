@@ -22,7 +22,7 @@ export default function Wiki() {
   }, []);
 
   return (
-    <div className="flex flex-col h-full bg-zinc-900 text-zinc-100">
+    <div className="flex flex-col h-full bg-page text-text-primary">
       <div className="flex-1 overflow-y-auto">
         <article
           className="wiki-content max-w-3xl mx-auto px-6 py-10"

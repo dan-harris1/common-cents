@@ -1,5 +1,5 @@
 .wiki-content {
-  color: #e4e4e7;
+  color: var(--color-text-primary);
   line-height: 1.8;
 }
 
@@ -12,7 +12,7 @@
 
 .wiki-content .CharOverride-2 {
   font-style: italic;
-  color: #a1a1aa;
+  color: var(--color-text-secondary);
 }
 
 .wiki-content .CharOverride-3 {
@@ -22,7 +22,7 @@
 }
 
 .wiki-content .CharOverride-4 {
-  color: #a1a1aa;
+  color: var(--color-text-secondary);
 }
 
 .wiki-content .CharOverride-5 {
@@ -30,7 +30,7 @@
 }
 
 .wiki-content .CharOverride-6 {
-  color: #a1a1aa;
+  color: var(--color-text-secondary);
   font-size: 0.875rem;
 }
 
@@ -41,7 +41,7 @@
 
 .wiki-content .CharOverride-8 {
   font-style: italic;
-  color: #a1a1aa;
+  color: var(--color-text-secondary);
 }
 
 /* Hide title page, TOC, quote, and image — start at chapter content */
@@ -57,14 +57,14 @@
 .wiki-content [class^="Table-of-Content"] {
   margin: 0;
   padding: 0.15rem 0;
-  color: #a1a1aa;
+  color: var(--color-text-secondary);
   font-size: 0.875rem;
 }
 
 .wiki-content .Table-of-Content_TOC-Chapter-Name {
   font-weight: 600;
   font-size: 1rem;
-  color: #e4e4e7;
+  color: var(--color-text-primary);
   margin-top: 1rem;
 }
 
@@ -93,21 +93,21 @@
 }
 
 .wiki-content [class^="Table-of-Content"] a:hover {
-  color: #e4e4e7;
+  color: var(--color-text-primary);
 }
 
 /* Opening quote */
 .wiki-content .eBook_Quote {
-  border-left: 3px solid #3f3f46;
+  border-left: 3px solid var(--color-border);
   padding-left: 1.25rem;
   margin: 2rem 0 0.5rem;
-  color: #a1a1aa;
+  color: var(--color-text-secondary);
   font-style: italic;
   line-height: 1.7;
 }
 
 .wiki-content .eBook_Quote-Author {
-  color: #71717a;
+  color: var(--color-text-muted);
   font-size: 0.875rem;
   margin-bottom: 2rem;
   padding-left: 1.25rem;
@@ -118,16 +118,16 @@
   font-size: 1.75rem;
   font-weight: 700;
   margin: 3rem 0 0.75rem;
-  color: #fafafa;
+  color: var(--color-text-heading);
   letter-spacing: -0.01em;
 }
 
 .wiki-content .eBook_Chapter-Synopsis {
-  color: #a1a1aa;
+  color: var(--color-text-secondary);
   font-style: italic;
   margin-bottom: 2rem;
   line-height: 1.7;
-  border-left: 3px solid #3f3f46;
+  border-left: 3px solid var(--color-border);
   padding-left: 1.25rem;
 }
 
@@ -135,14 +135,14 @@
   font-size: 1.375rem;
   font-weight: 600;
   margin: 2.5rem 0 0.75rem;
-  color: #fafafa;
+  color: var(--color-text-heading);
 }
 
 .wiki-content .eBook_SubHeading {
   font-size: 1.125rem;
   font-weight: 600;
   margin: 2rem 0 0.5rem;
-  color: #e4e4e7;
+  color: var(--color-text-primary);
 }
 
 .wiki-content .eBook_Body {
@@ -182,13 +182,17 @@
   margin: 1.5rem 0 0.25rem;
   padding: 0.75rem 1.25rem 0;
   border-left: 3px solid #60a5fa;
+  color: #3b82f6;
+}
+
+.dark .wiki-content .Sidebar_Sidebar-Heading-Topic {
   color: #93c5fd;
 }
 
 .wiki-content .Sidebar_Sidebar-Body {
   padding-left: 1.25rem;
   border-left: 3px solid #60a5fa;
-  color: #d4d4d8;
+  color: var(--color-text-secondary);
   margin-bottom: 0.5rem;
   font-size: 0.9375rem;
 }
@@ -198,7 +202,7 @@
   border-left: 3px solid #60a5fa;
   font-family: var(--font-geist-mono), monospace;
   font-size: 0.875rem;
-  color: #d4d4d8;
+  color: var(--color-text-secondary);
   white-space: pre;
   margin: 0.25rem 0;
 }
@@ -208,17 +212,17 @@
   text-align: center;
   font-weight: 600;
   font-size: 1.0625rem;
-  color: #fafafa;
+  color: var(--color-text-heading);
   margin: 2rem 0;
   padding: 1.5rem;
-  border-top: 1px solid #3f3f46;
-  border-bottom: 1px solid #3f3f46;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
 }
 
 /* Embellishment (decorative separator) */
 .wiki-content .eBook_Embellishment {
   text-align: center;
-  color: #52525b;
+  color: var(--color-text-muted);
   margin: 1.5rem 0;
   font-size: 0.875rem;
 }

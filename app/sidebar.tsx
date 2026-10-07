@@ -62,36 +62,36 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-56 shrink-0 bg-zinc-950 border-r border-zinc-700 flex flex-col h-full">
+    <aside className="w-56 shrink-0 bg-sidebar border-r border-border flex flex-col h-full">
       <div className="px-4 py-4">
-        <h1 className="text-lg font-semibold text-zinc-100">Common Cents</h1>
+        <h1 className="text-lg font-semibold text-text-heading">Common Cents</h1>
       </div>
       <nav className="flex flex-col gap-4 px-2 flex-1 overflow-y-auto">
         <div>
-          <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+          <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-text-muted">
             Wiki
           </p>
           <Link
             href="/wiki"
             className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               pathname === "/wiki"
-                ? "bg-zinc-800 text-zinc-100"
-                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
+                ? "bg-surface text-text-heading"
+                : "text-text-secondary hover:text-text-heading hover:bg-surface-hover"
             }`}
           >
             Chapter 1
           </Link>
         </div>
         <div className="flex flex-col min-h-0">
-          <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+          <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-text-muted">
             Chats
           </p>
           <Link
             href="/chat"
             className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               pathname === "/chat"
-                ? "bg-zinc-800 text-zinc-100"
-                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
+                ? "bg-surface text-text-heading"
+                : "text-text-secondary hover:text-text-heading hover:bg-surface-hover"
             }`}
           >
             <span className="italic">New Chat</span>
@@ -103,8 +103,8 @@ export default function Sidebar() {
                   href={`/chat/${chat.id}`}
                   className={`block px-3 py-2 pr-8 rounded-lg text-sm transition-colors truncate ${
                     pathname === `/chat/${chat.id}`
-                      ? "bg-zinc-800 text-zinc-100"
-                      : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
+                      ? "bg-surface text-text-heading"
+                      : "text-text-secondary hover:text-text-heading hover:bg-surface-hover"
                   }`}
                 >
                   {chat.title}
@@ -115,7 +115,7 @@ export default function Sidebar() {
                     e.stopPropagation();
                     setOpenMenu(openMenu?.chatId === chat.id ? null : { chatId: chat.id });
                   }}
-                  className="absolute right-0 top-0 bottom-0 w-8 flex items-center justify-center rounded-r-lg text-zinc-500 hover:text-zinc-200 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  className="absolute right-0 top-0 bottom-0 w-8 flex items-center justify-center rounded-r-lg text-ellipsis hover:text-ellipsis-hover opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                     <circle cx="8" cy="3" r="1.5" />
@@ -126,11 +126,11 @@ export default function Sidebar() {
                 {openMenu?.chatId === chat.id && (
                   <div
                     ref={menuRef}
-                    className="absolute right-0 top-full z-50 bg-zinc-800 border border-zinc-600 rounded-lg shadow-xl py-1 min-w-[120px]"
+                    className="absolute right-0 top-full z-50 bg-menu border border-border rounded-lg shadow-xl py-1 min-w-[120px]"
                   >
                     <button
                       onClick={() => handleDelete(chat.id)}
-                      className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-zinc-700 transition-colors"
+                      className="w-full text-left px-3 py-2 text-sm text-delete hover:bg-delete-hover transition-colors"
                     >
                       Delete
                     </button>

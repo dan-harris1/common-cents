@@ -1,29 +1,64 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, use } from "react";
 import { useRouter } from "next/navigation";
-import { MODELS } from "../models";
-import InputToolbar from "../input-toolbar";
+import { MODELS } from "../../models";
+import InputToolbar from "../../input-toolbar";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
+  model?: string;
   respondedModel?: string;
   warning?: string;
 }
 
-export default function NewChat() {
+export default function ChatPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [model, setModel] = useState(MODELS[0].id);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [chatLoaded, setChatLoaded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const handledPending = useRef(false);
-
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    async function loadChat() {
+      try {
+        const res = await fetch(`/api/chats/${id}`);
+        if (!res.ok) {
+          router.push("/chat");
+          return;
+        }
+        const chat = await res.json();
+        setModel(chat.model);
+        setMessages(
+          chat.messages.map((m: Message) => ({
+            role: m.role,
+            content: m.content,
+            respondedModel: m.respondedModel,
+            warning: m.warning,
+          }))
+        );
+        setChatLoaded(true);
+      } catch {
+        router.push("/chat");
+      }
+    }
+    loadChat();
+  }, [id, router]);
+
+  const hasScrolled = useRef(false);
+  useLayoutEffect(() => {
+    if (!messages.length) return;
+    const behavior = hasScrolled.current ? "smooth" : "instant";
+    messagesEndRef.current?.scrollIntoView({ behavior });
+    hasScrolled.current = true;
   }, [messages]);
 
   const sendMessage = useCallback(
@@ -61,65 +96,41 @@ export default function NewChat() {
           warning: data.warning,
         };
         const allMessages = [...updatedMessages, assistantMessage];
+        setLoading(false);
+        setMessages(allMessages);
 
-        const chatMessages = allMessages.map((m) => ({
-          role: m.role,
-          content: m.content,
-          model,
-          respondedModel: m.respondedModel,
-          warning: m.warning,
-        }));
+        const newMsgs = [
+          { role: "user" as const, content: text, model },
+          {
+            role: "assistant" as const,
+            content: data.response,
+            model,
+            respondedModel: data.respondedModel,
+            warning: data.warning,
+          },
+        ];
 
-        const createRes = await fetch("/api/chats", {
+        await fetch(`/api/chats/${id}/messages`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ model, messages: chatMessages }),
+          body: JSON.stringify({ messages: newMsgs }),
         });
 
-        setLoading(false);
-        if (createRes.ok) {
-          const chat = await createRes.json();
-          window.dispatchEvent(new Event("chats-updated"));
-          router.push(`/chat/${chat.id}`);
-        } else {
-          setMessages(allMessages);
-        }
+        window.dispatchEvent(new Event("chats-updated"));
       } catch {
         setError("Failed to connect to the server");
       } finally {
         setLoading(false);
       }
     },
-    [model, router]
+    [model, id]
   );
-
-  useEffect(() => {
-    if (handledPending.current) return;
-    try {
-      const saved = sessionStorage.getItem("cc-chat");
-      if (saved) {
-        sessionStorage.removeItem("cc-chat");
-        handledPending.current = true;
-        const pending = JSON.parse(saved);
-        if (pending.model && MODELS.some((m: { id: string }) => m.id === pending.model)) {
-          setModel(pending.model);
-        }
-        if (pending.q) {
-          sendMessage(pending.q, []);
-        }
-      }
-    } catch {}
-  }, [sendMessage]);
 
   return (
     <div className="relative flex flex-col h-full bg-zinc-900 text-zinc-100">
       <button
-        onClick={() => {
-          setMessages([]);
-          setError(null);
-        }}
-        disabled={messages.length === 0}
-        className="absolute top-3 right-4 z-10 bg-white hover:bg-zinc-200 disabled:opacity-40 disabled:hover:bg-white text-zinc-900 rounded-xl px-5 h-10 text-sm font-medium transition-colors"
+        onClick={() => router.push("/chat")}
+        className="absolute top-3 right-4 z-10 bg-white hover:bg-zinc-200 text-zinc-900 rounded-xl px-5 h-10 text-sm font-medium transition-colors"
       >
         New Chat
       </button>
@@ -135,11 +146,9 @@ export default function NewChat() {
         }}
       >
         <div className="max-w-3xl mx-auto space-y-6">
-          {messages.length === 0 && (
+          {!chatLoaded && (
             <div className="flex items-center justify-center h-full min-h-[50vh]">
-              <p className="text-zinc-500 text-lg">
-                Send a message to start chatting
-              </p>
+              <p className="text-zinc-500 text-lg">Loading chat...</p>
             </div>
           )}
 
@@ -198,7 +207,7 @@ export default function NewChat() {
         setModel={setModel}
         onSubmit={(text) => sendMessage(text, messages)}
         loading={loading}
-        modelLocked={messages.length > 0}
+        modelLocked={chatLoaded}
       />
     </div>
   );

@@ -12,6 +12,7 @@ export default function InputToolbar({
   setModel,
   onSubmit,
   loading = false,
+  modelLocked = false,
 }: {
   input: string;
   setInput: (val: string) => void;
@@ -19,6 +20,7 @@ export default function InputToolbar({
   setModel: (val: string) => void;
   onSubmit: (text: string) => void;
   loading?: boolean;
+  modelLocked?: boolean;
 }) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -48,7 +50,8 @@ export default function InputToolbar({
           <select
             value={model}
             onChange={(e) => setModel(e.target.value)}
-            className="appearance-none bg-zinc-800 border border-zinc-600 rounded-xl pl-3 pr-9 h-12 text-sm text-zinc-200 focus:outline-none focus:border-zinc-400"
+            disabled={modelLocked}
+            className="appearance-none bg-zinc-800 border border-zinc-600 rounded-xl pl-3 pr-9 h-12 text-sm text-zinc-200 focus:outline-none focus:border-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {MODELS.map((m) => (
               <option key={m.id} value={m.id}>

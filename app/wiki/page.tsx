@@ -10,6 +10,7 @@ export default function Wiki() {
   const [html, setHtml] = useState("");
   const [input, setInput] = useState("");
   const [model, setModel] = useState(MODELS[0].id);
+  const [mode, setMode] = useState<"book" | "open">("open");
   const router = useRouter();
 
   useEffect(() => {
@@ -34,9 +35,11 @@ export default function Wiki() {
         setInput={setInput}
         model={model}
         setModel={setModel}
+        mode={mode}
+        setMode={setMode}
         onSubmit={(text) => {
           try {
-            sessionStorage.setItem("cc-chat", JSON.stringify({ q: text, model }));
+            sessionStorage.setItem("cc-chat", JSON.stringify({ q: text, model, mode }));
           } catch {}
           router.push("/chat");
         }}

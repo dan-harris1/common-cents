@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const DEFAULT_MODEL = "moonshotai/Kimi-K3";
+import { getVectorIndex } from "../../lib/vector";
 
 export async function POST(req: NextRequest) {
-  const { message, model, history } = await req.json();
+  const { message, model, history, mode } = await req.json();
 
   if (!message) {
     return NextResponse.json({ error: "Message is required" }, { status: 400 });
@@ -21,9 +20,60 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No model selected" }, { status: 400 });
   }
 
-  const modelId = model;
+  let systemMessage: { role: string; content: string } | null = null;
+
+  if (mode === "book") {
+    const index = getVectorIndex();
+    if (!index) {
+      return NextResponse.json(
+        { error: "Book mode requires Vector index. Set UPSTASH_VECTOR_REST_URL and UPSTASH_VECTOR_REST_TOKEN in .env.local, then POST to /api/index to index the book." },
+        { status: 500 }
+      );
+    }
+
+    try {
+      const results = await index.query({
+        data: message,
+        topK: 5,
+        includeData: true,
+        includeMetadata: true,
+      });
+
+      if (results.length > 0) {
+        const excerpts = results
+          .map((r, i) => {
+            const meta = r.metadata as
+              | { chapter?: string; heading?: string; subheading?: string }
+              | undefined;
+            const location = [meta?.chapter, meta?.heading, meta?.subheading]
+              .filter(Boolean)
+              .join(" > ");
+            return `[${i + 1}]${location ? ` (${location})` : ""}\n${r.data}`;
+          })
+          .join("\n\n");
+
+        systemMessage = {
+          role: "system",
+          content: `You are a knowledgeable assistant discussing the book "Common Cents." Answer the user's question using the following excerpts from the book. Quote or reference specific passages when relevant. If the excerpts don't contain enough information to fully answer, acknowledge what the book says and note what isn't covered.\n\n--- Book Excerpts ---\n${excerpts}\n--- End Excerpts ---`,
+        };
+      } else {
+        systemMessage = {
+          role: "system",
+          content:
+            'You are a knowledgeable assistant discussing the book "Common Cents." The user asked a question in Book mode, but no relevant excerpts were found in the index. Let them know you couldn\'t find relevant book content for their question, and suggest they try rephrasing or switching to Open mode.',
+        };
+      }
+    } catch {
+      systemMessage = {
+        role: "system",
+        content:
+          'You are a knowledgeable assistant discussing the book "Common Cents." There was an issue retrieving book content. Answer as best you can, and let the user know the book search encountered an error.',
+      };
+    }
+  }
 
   const messages = [
+    ...(systemMessage ? [systemMessage] : []),
     ...(history || []),
     { role: "user", content: message },
   ];
@@ -38,7 +88,7 @@ export async function POST(req: NextRequest) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: modelId,
+          model,
           messages,
           max_tokens: 2048,
         }),
@@ -58,11 +108,11 @@ export async function POST(req: NextRequest) {
       data.choices?.[0]?.message?.content?.trim() || "No response generated.";
     const respondedModel = data.model || "unknown";
 
-    if (respondedModel !== modelId && !respondedModel.includes(modelId)) {
+    if (respondedModel !== model && !respondedModel.includes(model)) {
       return NextResponse.json({
         response: assistantMessage,
         respondedModel,
-        warning: `Requested ${modelId} but got response from ${respondedModel}`,
+        warning: `Requested ${model} but got response from ${respondedModel}`,
       });
     }
 

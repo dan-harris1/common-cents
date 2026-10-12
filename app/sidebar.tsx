@@ -79,7 +79,7 @@ export default function Sidebar() {
                 : "text-text-secondary hover:text-text-heading hover:bg-surface-hover"
             }`}
           >
-            Chapter 1
+            Common Cents
           </Link>
         </div>
         <div className="flex flex-col min-h-0">

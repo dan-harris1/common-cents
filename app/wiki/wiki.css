@@ -3,99 +3,6 @@
   line-height: 1.8;
 }
 
-/* Title page */
-.wiki-content .CharOverride-1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.wiki-content .CharOverride-2 {
-  font-style: italic;
-  color: var(--color-text-secondary);
-}
-
-.wiki-content .CharOverride-3 {
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-}
-
-.wiki-content .CharOverride-4 {
-  color: var(--color-text-secondary);
-}
-
-.wiki-content .CharOverride-5 {
-  font-style: italic;
-}
-
-.wiki-content .CharOverride-6 {
-  color: var(--color-text-secondary);
-  font-size: 0.875rem;
-}
-
-.wiki-content .CharOverride-7 {
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
-.wiki-content .CharOverride-8 {
-  font-style: italic;
-  color: var(--color-text-secondary);
-}
-
-/* Hide title page, TOC, quote, and image — start at chapter content */
-.wiki-content #_idContainer000,
-.wiki-content #_idContainer001,
-.wiki-content #_idContainer002,
-.wiki-content #_idContainer003,
-.wiki-content #_idContainer004,
-.wiki-content ._idGenObjectLayout-1 {
-  display: none;
-}
-
-.wiki-content [class^="Table-of-Content"] {
-  margin: 0;
-  padding: 0.15rem 0;
-  color: var(--color-text-secondary);
-  font-size: 0.875rem;
-}
-
-.wiki-content .Table-of-Content_TOC-Chapter-Name {
-  font-weight: 600;
-  font-size: 1rem;
-  color: var(--color-text-primary);
-  margin-top: 1rem;
-}
-
-.wiki-content .Table-of-Content_TOC-Heading {
-  padding-left: 1rem;
-}
-
-.wiki-content .Table-of-Content_TOC-SubHeading {
-  padding-left: 2rem;
-}
-
-.wiki-content .Table-of-Content_TOC-Sidebar-Heading {
-  padding-left: 3rem;
-  font-style: italic;
-}
-
-.wiki-content .Table-of-Content_TOC-Sidebar-Heading-Topic {
-  padding-left: 4rem;
-  font-style: italic;
-  font-size: 0.8125rem;
-}
-
-.wiki-content [class^="Table-of-Content"] a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.wiki-content [class^="Table-of-Content"] a:hover {
-  color: var(--color-text-primary);
-}
-
 /* Opening quote */
 .wiki-content .eBook_Quote {
   border-left: 3px solid var(--color-border);
@@ -155,15 +62,7 @@
 }
 
 .wiki-content .Sidebar-Concept {
-  color: inherit;
-}
-
-.wiki-content .Cross-Reference {
-  display: none;
-}
-
-.wiki-content .Next-Arrow {
-  display: none;
+  color: #60a5fa;
 }
 
 /* Sidebar definitions */
@@ -219,12 +118,19 @@
   border-bottom: 1px solid var(--color-border);
 }
 
-/* Embellishment (decorative separator) */
+/* Embellishment — section break divider (original InDesign glyph lost its font) */
 .wiki-content .eBook_Embellishment {
   text-align: center;
+  margin: 2.5rem 0;
+  font-size: 0;
+  color: transparent;
+}
+
+.wiki-content .eBook_Embellishment::before {
+  content: "* * *";
+  font-size: 1rem;
   color: var(--color-text-muted);
-  margin: 1.5rem 0;
-  font-size: 0.875rem;
+  letter-spacing: 0.5em;
 }
 
 /* Variable font (used in math formulas) */
@@ -238,33 +144,4 @@
   color: inherit;
   text-decoration: none;
   pointer-events: none;
-}
-
-/* Override InDesign paragraph centering */
-.wiki-content .ParaOverride-1 {
-  text-align: center;
-}
-
-.wiki-content .ParaOverride-2 {
-  text-align: center;
-}
-
-.wiki-content .ParaOverride-3 {
-  text-align: left;
-}
-
-.wiki-content .ParaOverride-4 {
-  text-align: left;
-}
-
-/* Reset InDesign container borders/frames */
-.wiki-content .Basic-Text-Frame {
-  margin-bottom: 0.5rem;
-}
-
-/* Empty ordered list from InDesign export */
-.wiki-content ol {
-  list-style: none;
-  padding: 0;
-  margin: 0;
 }

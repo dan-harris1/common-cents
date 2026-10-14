@@ -81,6 +81,16 @@ export default function Sidebar() {
           >
             Common Cents
           </Link>
+          <Link
+            href="/glossary"
+            className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              pathname === "/glossary"
+                ? "bg-surface text-text-heading"
+                : "text-text-secondary hover:text-text-heading hover:bg-surface-hover"
+            }`}
+          >
+            Glossary
+          </Link>
         </div>
         <div className="flex flex-col min-h-0">
           <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-text-muted">

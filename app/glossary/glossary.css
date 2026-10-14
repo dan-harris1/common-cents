@@ -1,0 +1,27 @@
+.glossary h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text-heading);
+  margin-bottom: 2rem;
+}
+
+.glossary dl {
+  margin: 0;
+}
+
+.glossary-entry {
+  margin-bottom: 1.5rem;
+}
+
+.glossary-entry dt {
+  font-weight: 600;
+  font-size: 1.0625rem;
+  color: var(--color-text-heading);
+  margin-bottom: 0.25rem;
+}
+
+.glossary-entry dd {
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+}

@@ -2,6 +2,7 @@
 
 import { useRef, useEffect } from "react";
 import InputToolbar from "../input-toolbar";
+import MarkdownMessage from "../markdown-message";
 import { useChat } from "../lib/use-chat";
 
 export default function NewChat() {
@@ -63,7 +64,11 @@ export default function NewChat() {
                     {msg.warning || msg.respondedModel}
                   </span>
                 )}
-                <span className="whitespace-pre-wrap">{msg.content}</span>
+                {msg.role === "assistant" ? (
+                  <MarkdownMessage content={msg.content} />
+                ) : (
+                  <span className="whitespace-pre-wrap">{msg.content}</span>
+                )}
               </div>
             </div>
           ))}

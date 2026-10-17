@@ -3,6 +3,7 @@
 import { useRef, useLayoutEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import InputToolbar from "../../input-toolbar";
+import MarkdownMessage from "../../markdown-message";
 import { useChat } from "../../lib/use-chat";
 
 export default function ChatPage({
@@ -68,7 +69,11 @@ export default function ChatPage({
                     {msg.warning || msg.respondedModel}
                   </span>
                 )}
-                <span className="whitespace-pre-wrap">{msg.content}</span>
+                {msg.role === "assistant" ? (
+                  <MarkdownMessage content={msg.content} />
+                ) : (
+                  <span className="whitespace-pre-wrap">{msg.content}</span>
+                )}
               </div>
             </div>
           ))}

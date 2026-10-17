@@ -67,8 +67,8 @@
   font-weight: 600;
   margin: 2rem 0 0.25rem;
   padding: 1rem 1.25rem 0;
-  border-left: 3px solid #60a5fa;
-  color: #60a5fa;
+  border-left: 3px solid var(--color-border);
+  color: var(--color-text-heading);
 }
 
 .wiki-content .Sidebar_Sidebar-Heading-Topic {
@@ -76,17 +76,13 @@
   font-weight: 500;
   margin: 1.5rem 0 0.25rem;
   padding: 0.75rem 1.25rem 0;
-  border-left: 3px solid #60a5fa;
-  color: #3b82f6;
-}
-
-.dark .wiki-content .Sidebar_Sidebar-Heading-Topic {
-  color: #93c5fd;
+  border-left: 3px solid var(--color-border);
+  color: var(--color-text-primary);
 }
 
 .wiki-content .Sidebar_Sidebar-Body {
   padding-left: 1.25rem;
-  border-left: 3px solid #60a5fa;
+  border-left: 3px solid var(--color-border);
   color: var(--color-text-secondary);
   margin-bottom: 0.5rem;
   font-size: 0.9375rem;
@@ -94,7 +90,7 @@
 
 .wiki-content .Sidebar_Syllogism {
   padding-left: 1.25rem;
-  border-left: 3px solid #60a5fa;
+  border-left: 3px solid var(--color-border);
   font-family: var(--font-geist-mono), monospace;
   font-size: 0.875rem;
   color: var(--color-text-secondary);
@@ -135,9 +131,40 @@
   font-style: italic;
 }
 
-/* Disable all links in book content */
-.wiki-content a {
+/* Glossary term links */
+.wiki-content a.glossary-link {
+  color: #60a5fa;
+  text-decoration: none;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.wiki-content a.glossary-link:hover {
+  text-decoration: underline;
+}
+
+/* Disable all other links in book content */
+.wiki-content a:not(.glossary-link) {
   color: inherit;
   text-decoration: none;
+  pointer-events: none;
+}
+
+/* Glossary tooltip */
+.glossary-tooltip {
+  position: fixed;
+  position-area: top;
+  position-try-fallbacks: flip-block;
+  margin-bottom: 8px;
+  max-width: 320px;
+  padding: 0.75rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  z-index: 50;
   pointer-events: none;
 }

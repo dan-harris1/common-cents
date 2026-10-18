@@ -101,7 +101,7 @@ export default function Wiki() {
 
     const definition = entry.definition.split("\n\n")[0];
     const anchorName = `--gl-${++anchorCounter.current}`;
-    target.style.anchorName = anchorName;
+    (target.style as Record<string, string>).anchorName = anchorName;
     setTooltip({ text: definition, anchor: anchorName });
   }, []);
 

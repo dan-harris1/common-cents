@@ -8,7 +8,7 @@
 }
 
 @theme {
-  --color-page: #ffffff;
+  --color-page: #f8f8fa;
   --color-sidebar: #f9fafb;
   --color-surface: #e4e4e7;
   --color-surface-hover: rgba(228, 228, 231, 0.5);

@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Sidebar from "./sidebar";
-import ThemeToggle from "./theme-toggle";
+import AppShell from "./app-shell";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,9 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="h-full flex bg-page">
-        <Sidebar />
-        <div className="flex-1 min-w-0 h-full">{children}</div>
-        <ThemeToggle />
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

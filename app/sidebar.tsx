@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "./lib/user-context";
 
 interface ChatEntry {
   id: string;
@@ -15,12 +16,31 @@ interface MenuState {
   chatId: string;
 }
 
+const COLOR_PRESETS = [
+  "#4A6FA5",
+  "#5A8F68",
+  "#7360A5",
+  "#2E6E6E",
+  "#B07A3F",
+  "#7E4A6B",
+];
+
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { currentUser, users, signOut, updateColor } = useUser();
   const [chats, setChats] = useState<ChatEntry[]>([]);
   const [openMenu, setOpenMenu] = useState<MenuState | null>(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const colorPickerRef = useRef<HTMLDivElement>(null);
+
+  const currentProfile = users.find((u) => u.name === currentUser);
+  const takenColors = users
+    .filter((u) => u.name !== currentUser)
+    .map((u) => u.color);
 
   const fetchChats = useCallback(async () => {
     try {
@@ -42,15 +62,21 @@ export default function Sidebar() {
   }, [fetchChats]);
 
   useEffect(() => {
-    if (!openMenu) return;
+    if (!openMenu && !showUserMenu && !showColorPicker) return;
     function handleClick(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      if (openMenu && menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setOpenMenu(null);
+      }
+      if (showUserMenu && userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setShowUserMenu(false);
+      }
+      if (showColorPicker && colorPickerRef.current && !colorPickerRef.current.contains(e.target as Node)) {
+        setShowColorPicker(false);
       }
     }
     document.addEventListener("click", handleClick);
     return () => document.removeEventListener("click", handleClick);
-  }, [openMenu]);
+  }, [openMenu, showUserMenu, showColorPicker]);
 
   async function handleDelete(chatId: string) {
     setOpenMenu(null);
@@ -66,7 +92,7 @@ export default function Sidebar() {
       <div className="px-4 py-4">
         <h1 className="text-lg font-semibold text-text-heading">Common Cents</h1>
       </div>
-      <nav className="flex flex-col gap-4 px-2 flex-1 overflow-y-auto">
+      <nav className="flex flex-col gap-6 px-2 flex-1 overflow-y-auto">
         <div>
           <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-text-muted">
             Wiki
@@ -151,6 +177,73 @@ export default function Sidebar() {
           </div>
         </div>
       </nav>
+
+      <div className="border-t border-border px-2 py-4 relative">
+        <div className="flex items-center gap-2 px-3 h-12">
+          <button
+            onClick={() => { setShowColorPicker(!showColorPicker); setShowUserMenu(false); }}
+            className="w-7 h-7 rounded-full shrink-0 cursor-pointer hover:ring-2 hover:ring-text-muted hover:ring-offset-2 hover:ring-offset-sidebar transition-all"
+            style={{ backgroundColor: currentProfile?.color }}
+          />
+          <span className="text-sm font-medium text-text-primary truncate flex-1">
+            {currentUser}
+          </span>
+          <button
+            onClick={() => { setShowUserMenu(!showUserMenu); setShowColorPicker(false); }}
+            className="text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </button>
+        </div>
+
+        {showColorPicker && (
+          <div
+            ref={colorPickerRef}
+            className="absolute bottom-full left-2 mb-1 bg-menu border border-border rounded-lg shadow-xl p-2 z-50 flex gap-1.5"
+          >
+            {COLOR_PRESETS.map((color) => {
+              const taken = takenColors.includes(color);
+              const selected = currentProfile?.color === color;
+              return (
+                <button
+                  key={color}
+                  onClick={() => {
+                    if (!taken) {
+                      updateColor(currentUser!, color);
+                      setShowColorPicker(false);
+                    }
+                  }}
+                  disabled={taken}
+                  className={`w-6 h-6 rounded-full transition-all ${
+                    selected ? "ring-2 ring-text-muted ring-offset-1 ring-offset-menu" : ""
+                  } ${taken ? "opacity-20 cursor-not-allowed" : "cursor-pointer hover:scale-110"}`}
+                  style={{ backgroundColor: color }}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {showUserMenu && (
+          <div
+            ref={userMenuRef}
+            className="absolute bottom-full left-2 right-2 mb-1 bg-menu border border-border rounded-lg shadow-xl py-1 z-50"
+          >
+            <button
+              onClick={() => {
+                setShowUserMenu(false);
+                signOut();
+              }}
+              className="w-full text-left px-3 py-2 text-sm text-delete hover:bg-delete-hover transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+        )}
+      </div>
     </aside>
   );
 }

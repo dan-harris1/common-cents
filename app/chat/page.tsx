@@ -4,14 +4,21 @@ import { useRef, useEffect } from "react";
 import InputToolbar from "../input-toolbar";
 import MarkdownMessage from "../markdown-message";
 import { useChat } from "../lib/use-chat";
+import { useUser } from "../lib/user-context";
 
 export default function NewChat() {
-  const chat = useChat();
+  const { currentUser, users } = useUser();
+  const chat = useChat(undefined, currentUser);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat.messages]);
+
+  function getSenderColor(sender?: string) {
+    if (!sender) return undefined;
+    return users.find((u) => u.name === sender)?.color;
+  }
 
   return (
     <div className="relative flex flex-col h-full bg-page text-text-primary">
@@ -53,13 +60,23 @@ export default function NewChat() {
               <div
                 className={`max-w-[80%] rounded-2xl px-4 py-3 inline-block ${
                   msg.role === "user"
-                    ? "bg-blue-600 text-white"
+                    ? "text-white"
                     : "bg-bubble-ai text-bubble-ai-text"
                 }`}
+                style={
+                  msg.role === "user"
+                    ? { backgroundColor: getSenderColor(msg.sender) || "#3b82f6" }
+                    : undefined
+                }
               >
+                {msg.role === "user" && msg.sender && (
+                  <span className="block text-xs leading-none mb-1.5 opacity-75">
+                    {msg.sender}
+                  </span>
+                )}
                 {msg.role === "assistant" && msg.respondedModel && (
                   <span
-                    className={`block text-xs mb-1 ${msg.warning ? "text-warning" : "text-text-muted"}`}
+                    className={`block text-xs leading-none mb-1.5 ${msg.warning ? "text-warning" : "text-text-muted"}`}
                   >
                     {msg.warning || msg.respondedModel}
                   </span>

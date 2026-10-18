@@ -11,9 +11,10 @@ export interface Message {
   mode?: string;
   respondedModel?: string;
   warning?: string;
+  sender?: string;
 }
 
-export function useChat(chatId?: string) {
+export function useChat(chatId?: string, currentUser?: string | null) {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -49,6 +50,7 @@ export function useChat(chatId?: string) {
             mode: m.mode,
             respondedModel: m.respondedModel,
             warning: m.warning,
+            sender: m.sender,
           }))
         );
         setChatLoaded(true);
@@ -65,7 +67,7 @@ export function useChat(chatId?: string) {
     const currentMode = modeRef.current;
 
     setError(null);
-    const userMessage: Message = { role: "user", content: text };
+    const userMessage: Message = { role: "user", content: text, sender: currentUser || undefined };
     const updatedMessages = [...currentMessages, userMessage];
     setMessages(updatedMessages);
     setInput("");
@@ -104,7 +106,7 @@ export function useChat(chatId?: string) {
       if (chatId) {
         setMessages(allMessages);
         const newMsgs = [
-          { role: "user" as const, content: text, model: currentModel, mode: currentMode },
+          { role: "user" as const, content: text, model: currentModel, mode: currentMode, sender: currentUser || undefined },
           {
             role: "assistant" as const,
             content: data.response,
@@ -128,6 +130,7 @@ export function useChat(chatId?: string) {
           mode: currentMode,
           respondedModel: m.respondedModel,
           warning: m.warning,
+          sender: m.sender,
         }));
         const createRes = await fetch("/api/chats", {
           method: "POST",

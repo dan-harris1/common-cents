@@ -11,6 +11,39 @@ export interface ChatMessage {
   model: string;
   respondedModel?: string;
   warning?: string;
+  sender?: string;
+}
+
+export interface UserProfile {
+  name: string;
+  color: string;
+}
+
+const USERS_KEY = "users";
+
+const DEFAULT_USERS: UserProfile[] = [
+  { name: "Tony", color: "#4A6FA5" },
+  { name: "Marisa", color: "#7360A5" },
+  { name: "Jonathan", color: "#2E6E6E" },
+  { name: "Daniel", color: "#5A8F68" },
+];
+
+export async function getUsers(): Promise<UserProfile[]> {
+  const data = await redis.get<string>(USERS_KEY);
+  if (!data) {
+    await redis.set(USERS_KEY, JSON.stringify(DEFAULT_USERS));
+    return DEFAULT_USERS;
+  }
+  return typeof data === "string" ? JSON.parse(data) : data;
+}
+
+export async function updateUserColor(name: string, color: string): Promise<UserProfile[] | null> {
+  const users = await getUsers();
+  const user = users.find((u) => u.name === name);
+  if (!user) return null;
+  user.color = color;
+  await redis.set(USERS_KEY, JSON.stringify(users));
+  return users;
 }
 
 export interface Chat {
@@ -60,6 +93,27 @@ export async function addMessages(
 export async function deleteChat(id: string): Promise<void> {
   await redis.del(`${CHAT_PREFIX}${id}`);
   await redis.zrem(CHAT_INDEX, id);
+}
+
+export async function migrateMessageSender(sender: string): Promise<number> {
+  const ids = await redis.zrange<string[]>(CHAT_INDEX, 0, -1);
+  let count = 0;
+  for (const id of ids) {
+    const chat = await getChat(id);
+    if (!chat) continue;
+    let changed = false;
+    for (const msg of chat.messages) {
+      if (msg.role === "user" && !msg.sender) {
+        msg.sender = sender;
+        changed = true;
+        count++;
+      }
+    }
+    if (changed) {
+      await redis.set(`${CHAT_PREFIX}${id}`, JSON.stringify(chat));
+    }
+  }
+  return count;
 }
 
 export async function listChats(): Promise<

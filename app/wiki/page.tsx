@@ -3,20 +3,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { MODELS } from "../models";
-import { TERMS } from "../glossary-terms";
+import { termBySlug, splitGlossaryTerms } from "../lib/glossary";
 import InputToolbar from "../input-toolbar";
 import "./wiki.css";
-
-const termLookup = new Map(
-  TERMS.map((t) => [t.term.toLowerCase(), t])
-);
-
-const sortedTerms = [...TERMS].sort((a, b) => b.term.length - a.term.length);
-
-const combinedPattern = new RegExp(
-  `\\b(${sortedTerms.map((t) => t.term.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")).join("|")})\\b`,
-  "gi"
-);
 
 function linkGlossaryTerms(html: string): string {
   const container = document.createElement("div");
@@ -32,33 +21,18 @@ function linkGlossaryTerms(html: string): string {
     const parent = node.parentElement;
     if (!parent || parent.tagName === "A") continue;
 
-    const text = node.textContent || "";
-    combinedPattern.lastIndex = 0;
-    if (!combinedPattern.test(text)) continue;
+    const segments = splitGlossaryTerms(node.textContent || "");
+    if (!segments.some((seg) => seg.slug)) continue;
 
-    combinedPattern.lastIndex = 0;
-    const parts: string[] = [];
-    let lastIndex = 0;
-    let match: RegExpExecArray | null;
+    const parts = segments.map((seg) =>
+      seg.slug
+        ? `<a class="glossary-link" href="/glossary#${seg.slug}" data-term="${seg.slug}">${escapeHtml(seg.text)}</a>`
+        : escapeHtml(seg.text)
+    );
 
-    while ((match = combinedPattern.exec(text)) !== null) {
-      const before = text.slice(lastIndex, match.index);
-      if (before) parts.push(escapeHtml(before));
-
-      const term = match[1];
-      const slug = term.toLowerCase().replace(/\s+/g, "-");
-      parts.push(`<a class="glossary-link" href="/glossary#${slug}" data-term="${slug}">${escapeHtml(term)}</a>`);
-      lastIndex = match.index + match[0].length;
-    }
-
-    const after = text.slice(lastIndex);
-    if (after) parts.push(escapeHtml(after));
-
-    if (parts.length > 0) {
-      const span = document.createElement("span");
-      span.innerHTML = parts.join("");
-      parent.replaceChild(span, node);
-    }
+    const span = document.createElement("span");
+    span.innerHTML = parts.join("");
+    parent.replaceChild(span, node);
   }
 
   return container.innerHTML;
@@ -94,9 +68,7 @@ export default function Wiki() {
     const slug = target.getAttribute("data-term");
     if (!slug) return;
 
-    const entry = TERMS.find(
-      (t) => t.term.toLowerCase().replace(/\s+/g, "-") === slug
-    );
+    const entry = termBySlug.get(slug);
     if (!entry) return;
 
     const definition = entry.definition.split("\n\n")[0];
@@ -104,6 +76,15 @@ export default function Wiki() {
     (target.style as unknown as Record<string, string>).anchorName = anchorName;
     setTooltip({ text: definition, anchor: anchorName });
   }, []);
+
+  // Navigate client-side so the glossary page can scroll to the clicked term.
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    const target = (e.target as HTMLElement).closest(".glossary-link");
+    if (!target || e.metaKey || e.ctrlKey || e.shiftKey) return;
+    e.preventDefault();
+    setTooltip(null);
+    router.push(`/glossary#${target.getAttribute("data-term")}`);
+  }, [router]);
 
   const handleMouseOut = useCallback((e: React.MouseEvent) => {
     const target = (e.target as HTMLElement).closest(".glossary-link");
@@ -126,6 +107,7 @@ export default function Wiki() {
           dangerouslySetInnerHTML={{ __html: html }}
           onMouseOver={handleMouseOver}
           onMouseOut={handleMouseOut}
+          onClick={handleClick}
         />
       </div>
       <InputToolbar

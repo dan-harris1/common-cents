@@ -35,7 +35,7 @@ export default function ChatPage({
     <div className="relative flex flex-col h-full bg-page text-text-primary">
       <button
         onClick={() => router.push("/chat")}
-        className="absolute top-3 right-4 z-10 bg-btn hover:bg-btn-hover text-btn-text rounded-xl px-5 h-10 text-sm font-medium transition-colors"
+        className="hidden xl:block absolute top-3 right-4 z-10 bg-btn hover:bg-btn-hover text-btn-text rounded-xl px-5 h-10 text-sm font-medium transition-colors"
       >
         New Chat
       </button>

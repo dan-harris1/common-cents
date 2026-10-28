@@ -5,6 +5,7 @@ import { UserProvider, useUser } from "./lib/user-context";
 import Sidebar from "./sidebar";
 import ThemeToggle from "./theme-toggle";
 import LoginScreen from "./login";
+import { ThemeProvider } from "./lib/theme-context";
 
 function AppContent({ children }: { children: ReactNode }) {
   const { currentUser } = useUser();
@@ -24,8 +25,10 @@ function AppContent({ children }: { children: ReactNode }) {
 
 export default function AppShell({ children }: { children: ReactNode }) {
   return (
-    <UserProvider>
-      <AppContent>{children}</AppContent>
-    </UserProvider>
+    <ThemeProvider>
+      <UserProvider>
+        <AppContent>{children}</AppContent>
+      </UserProvider>
+    </ThemeProvider>
   );
 }

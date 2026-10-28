@@ -28,7 +28,7 @@ export default function NewChat() {
           chat.setError(null);
         }}
         disabled={chat.messages.length === 0}
-        className="absolute top-3 right-4 z-10 bg-btn hover:bg-btn-hover disabled:opacity-40 disabled:hover:bg-btn text-btn-text rounded-xl px-5 h-10 text-sm font-medium transition-colors"
+        className="hidden xl:block absolute top-3 right-4 z-10 bg-btn hover:bg-btn-hover disabled:opacity-40 disabled:hover:bg-btn text-btn-text rounded-xl px-5 h-10 text-sm font-medium transition-colors"
       >
         New Chat
       </button>

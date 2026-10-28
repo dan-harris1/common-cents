@@ -1,37 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useTheme } from "./lib/theme-context";
 
 export default function ThemeToggle() {
-  const [dark, setDark] = useState(true);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("cc-theme");
-      if (saved === "light") {
-        setDark(false);
-        document.documentElement.classList.remove("dark");
-      }
-    } catch {}
-  }, []);
-
-  function toggle() {
-    const next = !dark;
-    setDark(next);
-    if (next) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-    try {
-      localStorage.setItem("cc-theme", next ? "dark" : "light");
-    } catch {}
-  }
+  const { dark, toggleTheme } = useTheme();
 
   return (
     <button
-      onClick={toggle}
-      className="fixed bottom-5 right-5 z-50 w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer"
+      onClick={toggleTheme}
+      className="hidden xl:flex fixed bottom-5 right-5 z-50 w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-700 items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer"
       aria-label="Toggle theme"
     >
       {dark ? (

@@ -12,8 +12,6 @@ export default function InputToolbar({
   setInput,
   model,
   setModel,
-  mode,
-  setMode,
   onSubmit,
   loading = false,
   modelLocked = false,
@@ -22,8 +20,6 @@ export default function InputToolbar({
   setInput: (val: string) => void;
   model: string;
   setModel: (val: string) => void;
-  mode: "book" | "open";
-  setMode: (val: "book" | "open") => void;
   onSubmit: (text: string) => void;
   loading?: boolean;
   modelLocked?: boolean;
@@ -31,7 +27,6 @@ export default function InputToolbar({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
   const [showSettings, setShowSettings] = useState(false);
-  const isBook = mode === "book";
   const modelName = MODELS.find((m) => m.id === model)?.name ?? model;
 
   useEffect(() => {
@@ -92,20 +87,6 @@ export default function InputToolbar({
 
             {showSettings && (
               <div className="absolute bottom-full left-0 mb-3 w-60 bg-menu border border-border rounded-lg shadow-xl py-1 z-50">
-                <label className="flex items-center justify-between px-3 py-2 text-sm text-text-primary cursor-pointer select-none hover:bg-surface-hover transition-colors">
-                  RAG
-                  <input
-                    type="checkbox"
-                    checked={isBook}
-                    onChange={() => setMode(isBook ? "open" : "book")}
-                    disabled={loading}
-                    className="sr-only peer"
-                  />
-                  <span className={`w-9 h-5 rounded-full transition-colors ${isBook ? "bg-blue-600" : "bg-surface"} relative inline-block peer-disabled:opacity-50`}>
-                    <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${isBook ? "translate-x-4" : ""}`} />
-                  </span>
-                </label>
-                <div className="border-t border-border my-1" />
                 <p className="px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-wider text-text-muted">
                   Model
                 </p>

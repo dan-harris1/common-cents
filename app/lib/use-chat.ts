@@ -8,7 +8,6 @@ export interface Message {
   role: "user" | "assistant";
   content: string;
   model?: string;
-  mode?: string;
   respondedModel?: string;
   warning?: string;
   sender?: string;
@@ -19,18 +18,15 @@ export function useChat(chatId?: string, currentUser?: string | null) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [model, setModel] = useState(MODELS[0].id);
-  const [mode, setMode] = useState<"book" | "open">("open");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [chatLoaded, setChatLoaded] = useState(!chatId);
 
   const messagesRef = useRef(messages);
   const modelRef = useRef(model);
-  const modeRef = useRef(mode);
   const handledPending = useRef(false);
   messagesRef.current = messages;
   modelRef.current = model;
-  modeRef.current = mode;
 
   useEffect(() => {
     if (!chatId) return;
@@ -47,7 +43,6 @@ export function useChat(chatId?: string, currentUser?: string | null) {
           chat.messages.map((m: Message) => ({
             role: m.role,
             content: m.content,
-            mode: m.mode,
             respondedModel: m.respondedModel,
             warning: m.warning,
             sender: m.sender,
@@ -64,7 +59,6 @@ export function useChat(chatId?: string, currentUser?: string | null) {
   const sendMessage = useCallback(async (text: string) => {
     const currentMessages = messagesRef.current;
     const currentModel = modelRef.current;
-    const currentMode = modeRef.current;
 
     setError(null);
     const userMessage: Message = { role: "user", content: text, sender: currentUser || undefined };
@@ -80,7 +74,6 @@ export function useChat(chatId?: string, currentUser?: string | null) {
         body: JSON.stringify({
           message: text,
           model: currentModel,
-          mode: currentMode,
           history: currentMessages,
         }),
       });
@@ -106,12 +99,11 @@ export function useChat(chatId?: string, currentUser?: string | null) {
       if (chatId) {
         setMessages(allMessages);
         const newMsgs = [
-          { role: "user" as const, content: text, model: currentModel, mode: currentMode, sender: currentUser || undefined },
+          { role: "user" as const, content: text, model: currentModel, sender: currentUser || undefined },
           {
             role: "assistant" as const,
             content: data.response,
             model: currentModel,
-            mode: currentMode,
             respondedModel: data.respondedModel,
             warning: data.warning,
           },
@@ -127,7 +119,6 @@ export function useChat(chatId?: string, currentUser?: string | null) {
           role: m.role,
           content: m.content,
           model: currentModel,
-          mode: currentMode,
           respondedModel: m.respondedModel,
           warning: m.warning,
           sender: m.sender,
@@ -164,10 +155,6 @@ export function useChat(chatId?: string, currentUser?: string | null) {
           setModel(pending.model);
           modelRef.current = pending.model;
         }
-        if (pending.mode === "book" || pending.mode === "open") {
-          setMode(pending.mode);
-          modeRef.current = pending.mode;
-        }
         if (pending.q) {
           sendMessage(pending.q);
         }
@@ -182,8 +169,6 @@ export function useChat(chatId?: string, currentUser?: string | null) {
     setInput,
     model,
     setModel,
-    mode,
-    setMode,
     loading,
     error,
     setError,

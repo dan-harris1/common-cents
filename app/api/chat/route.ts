@@ -1,8 +1,59 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVectorIndex } from "../../lib/vector";
+import { TERMS } from "../../glossary-terms";
+
+const SYSTEM_PROMPT = `You are the companion to "Common Cents," a book on the philosophy of money, on a website where readers explore the book and discuss it with you. Converse naturally: answer what the reader actually asks, in whatever depth the conversation calls for.
+
+Below is background material from the book: its glossary, which is always included, and passages retrieved because they may relate to the reader's latest message. Treat this material as your familiarity with the book, not as a script. Draw on it as much or as little as is natural: build an answer around it, make a passing connection, or leave it aside when it isn't relevant. Quote the book when its exact wording helps.
+
+When you speak for the book, stay faithful to what it says and don't attribute views to it that the material doesn't support. If a question goes beyond what the material covers, you can still answer from general knowledge, but make clear what comes from the book and what doesn't.
+
+The passages are selected automatically, so they may be only loosely related or not related at all. Don't mention the retrieval process or refer to "excerpts" or "passages provided"; speak as someone who knows the book.`;
+
+const GLOSSARY = TERMS.map((t) => `${t.term}: ${t.definition}`).join("\n\n");
+
+type HistoryMessage = { role: "user" | "assistant"; content: string };
+
+// Searches the book for passages related to the latest message. The previous
+// user message is included so follow-ups ("what did he mean by that?") still
+// find the right passages. Returns "" if nothing could be retrieved.
+async function retrievePassages(message: string, history: HistoryMessage[]): Promise<string> {
+  const index = getVectorIndex();
+  if (!index) {
+    console.error("Book search skipped: UPSTASH_VECTOR_REST_URL / UPSTASH_VECTOR_REST_TOKEN not set");
+    return "";
+  }
+
+  const previous = [...history].reverse().find((m) => m.role === "user")?.content;
+  const query = previous ? `${previous}\n${message}` : message;
+
+  try {
+    const results = await index.query({
+      data: query,
+      topK: 5,
+      includeData: true,
+      includeMetadata: true,
+    });
+
+    return results
+      .map((r) => {
+        const meta = r.metadata as
+          | { chapter?: string; heading?: string; subheading?: string }
+          | undefined;
+        const location = [meta?.chapter, meta?.heading, meta?.subheading]
+          .filter(Boolean)
+          .join(" > ");
+        return `${location ? `(${location})\n` : ""}${r.data}`;
+      })
+      .join("\n\n---\n\n");
+  } catch (error) {
+    console.error("Book search failed:", error);
+    return "";
+  }
+}
 
 export async function POST(req: NextRequest) {
-  const { message, model, history, mode } = await req.json();
+  const { message, model, history = [] } = await req.json();
 
   if (!message) {
     return NextResponse.json({ error: "Message is required" }, { status: 400 });
@@ -20,61 +71,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No model selected" }, { status: 400 });
   }
 
-  let systemMessage: { role: string; content: string } | null = null;
+  // Only role and content go to the model; stored messages carry extra fields.
+  const priorMessages: HistoryMessage[] = (history as HistoryMessage[]).map((m) => ({
+    role: m.role,
+    content: m.content,
+  }));
 
-  if (mode === "book") {
-    const index = getVectorIndex();
-    if (!index) {
-      return NextResponse.json(
-        { error: "Book mode requires Vector index. Set UPSTASH_VECTOR_REST_URL and UPSTASH_VECTOR_REST_TOKEN in .env.local, then POST to /api/index to index the book." },
-        { status: 500 }
-      );
-    }
-
-    try {
-      const results = await index.query({
-        data: message,
-        topK: 5,
-        includeData: true,
-        includeMetadata: true,
-      });
-
-      if (results.length > 0) {
-        const excerpts = results
-          .map((r, i) => {
-            const meta = r.metadata as
-              | { chapter?: string; heading?: string; subheading?: string }
-              | undefined;
-            const location = [meta?.chapter, meta?.heading, meta?.subheading]
-              .filter(Boolean)
-              .join(" > ");
-            return `[${i + 1}]${location ? ` (${location})` : ""}\n${r.data}`;
-          })
-          .join("\n\n");
-
-        systemMessage = {
-          role: "system",
-          content: `You are a knowledgeable assistant discussing the book "Common Cents." Answer the user's question using the following excerpts from the book. Quote or reference specific passages when relevant. If the excerpts don't contain enough information to fully answer, acknowledge what the book says and note what isn't covered.\n\n--- Book Excerpts ---\n${excerpts}\n--- End Excerpts ---`,
-        };
-      } else {
-        systemMessage = {
-          role: "system",
-          content:
-            'You are a knowledgeable assistant discussing the book "Common Cents." The user asked a question in Book mode, but no relevant excerpts were found in the index. Let them know you couldn\'t find relevant book content for their question, and suggest they try rephrasing or switching to Open mode.',
-        };
-      }
-    } catch {
-      systemMessage = {
-        role: "system",
-        content:
-          'You are a knowledgeable assistant discussing the book "Common Cents." There was an issue retrieving book content. Answer as best you can, and let the user know the book search encountered an error.',
-      };
-    }
-  }
+  const passages = await retrievePassages(message, priorMessages);
+  const systemContent = [
+    SYSTEM_PROMPT,
+    `--- Glossary ---\n${GLOSSARY}\n--- End Glossary ---`,
+    passages && `--- Passages from the book ---\n${passages}\n--- End Passages ---`,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 
   const messages = [
-    ...(systemMessage ? [systemMessage] : []),
-    ...(history || []),
+    { role: "system", content: systemContent },
+    ...priorMessages,
     { role: "user", content: message },
   ];
 

@@ -124,8 +124,6 @@ export default function ChatPage({
         setInput={chat.setInput}
         model={chat.model}
         setModel={chat.setModel}
-        mode={chat.mode}
-        setMode={chat.setMode}
         onSubmit={chat.sendMessage}
         loading={chat.loading}
         modelLocked={chat.modelLocked}

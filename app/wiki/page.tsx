@@ -4,12 +4,15 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { MODELS } from "../models";
 import { termBySlug, splitGlossaryTerms } from "../lib/glossary";
+import { loadChapter, tagSections, scrollToSection } from "../lib/chapter";
 import InputToolbar from "../input-toolbar";
 import "./wiki.css";
 
-function linkGlossaryTerms(html: string): string {
+// Adds section ids (for the sidebar's table of contents) and glossary links.
+function prepareChapter(html: string): string {
   const container = document.createElement("div");
   container.innerHTML = html;
+  tagSections(container);
 
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
   const textNodes: Text[] = [];
@@ -51,14 +54,15 @@ export default function Wiki() {
   const router = useRouter();
 
   useEffect(() => {
-    fetch("/chapter1.html")
-      .then((res) => res.text())
-      .then((text) => {
-        const match = text.match(/<body[^>]*>([\s\S]*)<\/body>/i);
-        const body = match ? match[1] : text;
-        setHtml(linkGlossaryTerms(body));
-      });
+    loadChapter().then((body) => setHtml(prepareChapter(body)));
   }, []);
+
+  // Jump to the section in the URL hash once the chapter has rendered.
+  useEffect(() => {
+    if (!html) return;
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    if (id) scrollToSection(id, false);
+  }, [html]);
 
   const anchorCounter = useRef(0);
 

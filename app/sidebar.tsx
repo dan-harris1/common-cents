@@ -6,6 +6,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "./lib/user-context";
 import { useTheme } from "./lib/theme-context";
+import { loadSections, scrollToSection, type ChapterSection } from "./lib/chapter";
 
 interface ChatEntry {
   id: string;
@@ -84,6 +85,7 @@ function NavItem({
   active,
   expanded,
   italic = false,
+  onClick,
 }: {
   href: string;
   label: string;
@@ -91,11 +93,13 @@ function NavItem({
   active: boolean;
   expanded: boolean;
   italic?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
 }) {
   return (
     <Link
       href={href}
       title={expanded ? undefined : label}
+      onClick={onClick}
       className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
         active
           ? "bg-surface text-text-heading"
@@ -119,6 +123,8 @@ export default function Sidebar() {
   const { dark, toggleTheme } = useTheme();
   const [open, setOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [sections, setSections] = useState<ChapterSection[]>([]);
+  const [showToc, setShowToc] = useState(false);
   const [chats, setChats] = useState<ChatEntry[]>([]);
   const [openMenu, setOpenMenu] = useState<MenuState | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -159,6 +165,19 @@ export default function Sidebar() {
     mq.addEventListener("change", apply);
     return () => mq.removeEventListener("change", apply);
   }, []);
+
+  useEffect(() => {
+    loadSections().then(setSections).catch(() => {});
+  }, []);
+
+  // Already on the wiki: scroll in place instead of navigating. From another
+  // page the link navigates and the wiki scrolls to the hash once it loads.
+  function goToSection(e: React.MouseEvent, id: string) {
+    if (pathname !== "/wiki") return;
+    e.preventDefault();
+    history.replaceState(null, "", id ? `#${id}` : "/wiki");
+    scrollToSection(id);
+  }
 
   function toggleSidebar() {
     const next = !open;
@@ -240,7 +259,60 @@ export default function Sidebar() {
           >
             Wiki
           </p>
-          <NavItem href="/wiki" label="Common Cents" icon={<BookIcon />} active={pathname === "/wiki"} expanded={open} />
+          <div className="relative">
+            <NavItem
+              href="/wiki"
+              label="Common Cents"
+              icon={<BookIcon />}
+              active={pathname === "/wiki"}
+              expanded={open}
+              onClick={(e) => goToSection(e, "")}
+            />
+            {open && sections.length > 0 && (
+              <button
+                onClick={() => setShowToc(!showToc)}
+                aria-label={showToc ? "Hide contents" : "Show contents"}
+                aria-expanded={showToc}
+                className="absolute right-0 top-0 bottom-0 w-8 flex items-center justify-center rounded-r-lg text-text-muted hover:text-text-heading transition-colors cursor-pointer"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`transition-transform ${showToc ? "rotate-90" : ""}`}
+                >
+                  <polyline points="9 6 15 12 9 18" />
+                </svg>
+              </button>
+            )}
+          </div>
+          {/* Slides open/closed by animating the grid row from 0fr to 1fr. */}
+          <div
+            inert={!(open && showToc)}
+            className={`grid transition-[grid-template-rows] duration-200 ease-out ${
+              open && showToc ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+            }`}
+          >
+            <div className="min-h-0 overflow-hidden">
+              <div className="ml-[21px] my-1 pl-1.5 border-l border-border flex flex-col gap-0.5">
+                {sections.map((section) => (
+                  <Link
+                    key={section.id}
+                    href={`/wiki#${section.id}`}
+                    onClick={(e) => goToSection(e, section.id)}
+                    className="block pl-3.5 pr-3 py-1.5 rounded-lg text-sm leading-snug text-text-secondary hover:text-text-heading hover:bg-surface-hover transition-colors"
+                  >
+                    {section.title}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
           <NavItem href="/glossary" label="Glossary" icon={<GlossaryIcon />} active={pathname === "/glossary"} expanded={open} />
         </div>
         <div className="flex flex-col min-h-0">

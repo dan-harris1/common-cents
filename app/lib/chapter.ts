@@ -2,7 +2,7 @@
 // contents read from one fetch and agree on section ids.
 
 // The chapter title (start of the text) followed by its main section headings.
-const SECTION_SELECTOR = ".eBook_Chapter-Name, .eBook_Heading";
+export const SECTION_SELECTOR = ".eBook_Chapter-Name, .eBook_Heading";
 
 export interface ChapterSection {
   id: string;
@@ -54,4 +54,49 @@ export async function loadSections(): Promise<ChapterSection[]> {
 export function scrollToSection(id: string, smooth = true) {
   const el = id ? document.getElementById(id) : document.querySelector(".wiki-content");
   el?.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
+}
+
+// The section the reader is currently in. The wiki updates it while scrolling
+// and the sidebar listens for "cc-section" to highlight it.
+let currentSection = "";
+
+export function getCurrentSection(): string {
+  return currentSection;
+}
+
+export function setCurrentSection(id: string) {
+  if (id === currentSection) return;
+  currentSection = id;
+  window.dispatchEvent(new CustomEvent("cc-section", { detail: id }));
+}
+
+// The reader's place in the book (like a bookmark), kept only in this browser.
+// Separate from the sidebar's open/closed state so either can be cleared alone.
+const PLACE_KEY = "cc-place:common-cents";
+
+export interface ReadingPlace {
+  section: string;
+  offset: number;
+  savedAt: number;
+}
+
+export function loadPlace(): ReadingPlace | null {
+  try {
+    const raw = localStorage.getItem(PLACE_KEY);
+    return raw ? (JSON.parse(raw) as ReadingPlace) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function savePlace(section: string, offset: number) {
+  try {
+    localStorage.setItem(PLACE_KEY, JSON.stringify({ section, offset, savedAt: Date.now() }));
+  } catch {}
+}
+
+export function clearPlace() {
+  try {
+    localStorage.removeItem(PLACE_KEY);
+  } catch {}
 }

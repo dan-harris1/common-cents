@@ -27,6 +27,7 @@
   --color-btn-hover: #3f3f46;
   --color-btn-text: #ffffff;
 
+  --color-bubble-user: #4A6FA5;
   --color-bubble-ai: #f4f4f5;
   --color-bubble-ai-text: #18181b;
 
@@ -82,4 +83,28 @@
 
   --color-delete: #f87171;
   --color-delete-hover: #3f3f46;
+}
+
+/* Deep links skip the title splash (class set before paint in layout.tsx). */
+.cc-no-splash .cc-splash {
+  display: none;
+}
+
+.cc-splash-title {
+  animation: cc-splash-in 400ms ease-out both;
+}
+
+@keyframes cc-splash-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-splash-title {
+    animation: none;
+  }
 }

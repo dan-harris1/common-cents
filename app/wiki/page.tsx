@@ -1,10 +1,19 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { MODELS } from "../models";
 import { termBySlug, splitGlossaryTerms } from "../lib/glossary";
-import { loadChapter, tagSections, scrollToSection } from "../lib/chapter";
+import {
+  loadChapter,
+  tagSections,
+  scrollToSection,
+  setCurrentSection,
+  loadPlace,
+  savePlace,
+  clearPlace,
+  SECTION_SELECTOR,
+} from "../lib/chapter";
 import InputToolbar from "../input-toolbar";
 import "./wiki.css";
 
@@ -56,12 +65,87 @@ export default function Wiki() {
     loadChapter().then((body) => setHtml(prepareChapter(body)));
   }, []);
 
-  // Jump to the section in the URL hash once the chapter has rendered.
+  const scrollRef = useRef<HTMLElement>(null);
+  const skipNextSave = useRef(false);
+  // Latest place the reader scrolled to; saved without touching the DOM so it
+  // still works while the page is unmounting.
+  const lastPlace = useRef<{ section: string; offset: number } | null>(null);
+  const saveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // The section the reader is in: the last heading at or above the top of the
+  // viewport, plus how far past that heading they've scrolled.
+  const findPlace = useCallback(() => {
+    const container = scrollRef.current;
+    if (!container) return null;
+    const containerTop = container.getBoundingClientRect().top;
+    const headings = container.querySelectorAll<HTMLElement>(SECTION_SELECTOR);
+    let current: HTMLElement | null = headings[0] ?? null;
+    for (const heading of headings) {
+      if (heading.getBoundingClientRect().top - containerTop <= 80) current = heading;
+      else break;
+    }
+    if (!current) return null;
+    const headingTop = current.getBoundingClientRect().top - containerTop + container.scrollTop;
+    return { section: current.id, offset: Math.round(container.scrollTop - headingTop) };
+  }, []);
+
+  const saveNow = useCallback(() => {
+    clearTimeout(saveTimer.current);
+    const place = lastPlace.current;
+    if (place) savePlace(place.section, place.offset);
+    lastPlace.current = null;
+  }, []);
+
+  // Once the chapter has rendered (before it's painted): a section in the URL
+  // wins, otherwise reopen where the reader left off.
+  useLayoutEffect(() => {
+    const container = scrollRef.current;
+    if (!html || !container) return;
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    if (id) {
+      scrollToSection(id, false);
+    } else {
+      const place = loadPlace();
+      const heading = place && document.getElementById(place.section);
+      if (place && heading) {
+        const headingTop =
+          heading.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop;
+        container.scrollTop = headingTop + place.offset;
+        skipNextSave.current = true;
+      } else if (place) {
+        clearPlace();
+      }
+    }
+    setCurrentSection(findPlace()?.section ?? "");
+  }, [html, findPlace]);
+
+  const handleScroll = useCallback(() => {
+    const place = findPlace();
+    if (place) setCurrentSection(place.section);
+    // The scroll caused by restoring the saved place isn't the reader moving.
+    if (skipNextSave.current) {
+      skipNextSave.current = false;
+      return;
+    }
+    lastPlace.current = place;
+    clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(saveNow, 500);
+  }, [findPlace, saveNow]);
+
+  // Also save when the tab is hidden or closed, and when leaving the page.
   useEffect(() => {
     if (!html) return;
-    const id = decodeURIComponent(window.location.hash.slice(1));
-    if (id) scrollToSection(id, false);
-  }, [html]);
+    function onHide() {
+      if (document.visibilityState === "hidden") saveNow();
+    }
+    window.addEventListener("pagehide", saveNow);
+    document.addEventListener("visibilitychange", onHide);
+    return () => {
+      window.removeEventListener("pagehide", saveNow);
+      document.removeEventListener("visibilitychange", onHide);
+      saveNow();
+    };
+  }, [html, saveNow]);
 
   const anchorCounter = useRef(0);
 
@@ -96,7 +180,13 @@ export default function Wiki() {
 
   return (
     <div className="flex flex-col h-full bg-page text-text-primary">
-      <div className="flex-1 overflow-y-auto">
+      <main
+        ref={scrollRef}
+        id="main-content"
+        tabIndex={-1}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto outline-none"
+      >
         {tooltip && (
           <div
             className="glossary-tooltip"
@@ -112,7 +202,7 @@ export default function Wiki() {
           onMouseOut={handleMouseOut}
           onClick={handleClick}
         />
-      </div>
+      </main>
       <InputToolbar
         input={input}
         setInput={setInput}

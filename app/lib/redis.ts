@@ -11,39 +11,6 @@ export interface ChatMessage {
   model: string;
   respondedModel?: string;
   warning?: string;
-  sender?: string;
-}
-
-export interface UserProfile {
-  name: string;
-  color: string;
-}
-
-const USERS_KEY = "users";
-
-const DEFAULT_USERS: UserProfile[] = [
-  { name: "Tony", color: "#4A6FA5" },
-  { name: "Marisa", color: "#7360A5" },
-  { name: "Jonathan", color: "#2E6E6E" },
-  { name: "Daniel", color: "#5A8F68" },
-];
-
-export async function getUsers(): Promise<UserProfile[]> {
-  const data = await redis.get<string>(USERS_KEY);
-  if (!data) {
-    await redis.set(USERS_KEY, JSON.stringify(DEFAULT_USERS));
-    return DEFAULT_USERS;
-  }
-  return typeof data === "string" ? JSON.parse(data) : data;
-}
-
-export async function updateUserColor(name: string, color: string): Promise<UserProfile[] | null> {
-  const users = await getUsers();
-  const user = users.find((u) => u.name === name);
-  if (!user) return null;
-  user.color = color;
-  await redis.set(USERS_KEY, JSON.stringify(users));
-  return users;
 }
 
 export interface Chat {
@@ -95,27 +62,6 @@ export async function deleteChat(id: string): Promise<void> {
   await redis.zrem(CHAT_INDEX, id);
 }
 
-export async function migrateMessageSender(sender: string): Promise<number> {
-  const ids = await redis.zrange<string[]>(CHAT_INDEX, 0, -1);
-  let count = 0;
-  for (const id of ids) {
-    const chat = await getChat(id);
-    if (!chat) continue;
-    let changed = false;
-    for (const msg of chat.messages) {
-      if (msg.role === "user" && !msg.sender) {
-        msg.sender = sender;
-        changed = true;
-        count++;
-      }
-    }
-    if (changed) {
-      await redis.set(`${CHAT_PREFIX}${id}`, JSON.stringify(chat));
-    }
-  }
-  return count;
-}
-
 export async function listChats(): Promise<
   { id: string; title: string; model: string; updatedAt: number }[]
 > {
@@ -133,4 +79,64 @@ export async function listChats(): Promise<
       return { id: chat.id, title: chat.title, model: chat.model, updatedAt: chat.updatedAt };
     })
     .filter(Boolean) as { id: string; title: string; model: string; updatedAt: number }[];
+}
+
+// Public reader questions with optional author answers. Stored like chats:
+// one JSON value per question plus a sorted-set index by creation time.
+export interface Question {
+  id: string;
+  text: string;
+  name: string;
+  createdAt: number;
+  status: "awaiting" | "answered";
+  hidden: boolean;
+  answer?: string;
+  answeredAt?: number;
+}
+
+const QUESTION_PREFIX = "question:";
+const QUESTION_INDEX = "questions";
+
+function parse<T>(raw: unknown): T {
+  return typeof raw === "string" ? JSON.parse(raw) : (raw as T);
+}
+
+export async function createQuestion(id: string, text: string, name: string): Promise<Question> {
+  const question: Question = {
+    id,
+    text,
+    name,
+    createdAt: Date.now(),
+    status: "awaiting",
+    hidden: false,
+  };
+  await redis.set(`${QUESTION_PREFIX}${id}`, JSON.stringify(question));
+  await redis.zadd(QUESTION_INDEX, { score: question.createdAt, member: id });
+  return question;
+}
+
+export async function getQuestion(id: string): Promise<Question | null> {
+  const data = await redis.get(`${QUESTION_PREFIX}${id}`);
+  return data ? parse<Question>(data) : null;
+}
+
+export async function saveQuestion(question: Question): Promise<void> {
+  await redis.set(`${QUESTION_PREFIX}${question.id}`, JSON.stringify(question));
+}
+
+export async function listQuestions(): Promise<Question[]> {
+  const ids = await redis.zrange<string[]>(QUESTION_INDEX, 0, -1, { rev: true });
+  if (!ids.length) return [];
+  const pipeline = redis.pipeline();
+  for (const id of ids) pipeline.get(`${QUESTION_PREFIX}${id}`);
+  const results = await pipeline.exec();
+  return results.filter(Boolean).map((raw) => parse<Question>(raw));
+}
+
+// Fixed-window counter: returns false once `limit` hits within `windowSeconds`.
+export async function checkRateLimit(key: string, limit: number, windowSeconds: number): Promise<boolean> {
+  const fullKey = `ratelimit:${key}`;
+  const count = await redis.incr(fullKey);
+  if (count === 1) await redis.expire(fullKey, windowSeconds);
+  return count <= limit;
 }

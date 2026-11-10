@@ -28,7 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{if(localStorage.getItem("cc-theme")==="light")document.documentElement.classList.remove("dark")}catch(e){}`,
+            __html: `try{if(location.hash)document.documentElement.classList.add("cc-no-splash");if(localStorage.getItem("cc-theme")==="light")document.documentElement.classList.remove("dark");localStorage.removeItem("cc-user")}catch(e){}`,
           }}
         />
       </head>

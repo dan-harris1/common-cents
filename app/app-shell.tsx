@@ -1,34 +1,22 @@
 "use client";
 
 import { type ReactNode } from "react";
-import { UserProvider, useUser } from "./lib/user-context";
 import Sidebar from "./sidebar";
+import Splash from "./splash";
 import ThemeToggle from "./theme-toggle";
-import LoginScreen from "./login";
 import { ThemeProvider } from "./lib/theme-context";
-
-function AppContent({ children }: { children: ReactNode }) {
-  const { currentUser } = useUser();
-
-  if (!currentUser) {
-    return <LoginScreen />;
-  }
-
-  return (
-    <>
-      <Sidebar />
-      <div className="flex-1 min-w-0 h-full">{children}</div>
-      <ThemeToggle />
-    </>
-  );
-}
+import { AdminProvider } from "./lib/admin-context";
 
 export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
-      <UserProvider>
-        <AppContent>{children}</AppContent>
-      </UserProvider>
+      <AdminProvider>
+        <Sidebar />
+        {/* On phones the sidebar becomes a drawer behind a 3rem top bar. */}
+        <div className="flex-1 min-w-0 h-full pt-12 md:pt-0">{children}</div>
+        <ThemeToggle />
+        <Splash />
+      </AdminProvider>
     </ThemeProvider>
   );
 }

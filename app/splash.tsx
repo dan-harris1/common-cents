@@ -59,7 +59,7 @@ export default function Splash() {
       style={{ opacity: phase === "fade" ? 0 : 1, transitionDuration: `${FADE_MS}ms` }}
     >
       <h1
-        className="cc-splash-title font-semibold tracking-tight text-text-heading whitespace-nowrap select-none"
+        className="cc-splash-title font-display font-semibold tracking-tight text-text-heading whitespace-nowrap select-none"
         style={{ fontSize: "clamp(2.5rem, 11vw, 10rem)" }}
       >
         Common Cents

@@ -5,6 +5,8 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-body: var(--font-arsenal), Georgia, serif;
+  --font-display: var(--font-big-shoulders), sans-serif;
 }
 
 @theme {

@@ -12,6 +12,7 @@ import {
   loadPlace,
   type ChapterSection,
 } from "./lib/chapter";
+import { LECTURES } from "./lib/lectures";
 
 interface ChatEntry {
   id: string;
@@ -23,11 +24,12 @@ interface ChatEntry {
 interface Groups {
   wiki: boolean;
   book: boolean;
+  lectures: boolean;
   chats: boolean;
 }
 
 const GROUPS_KEY = "cc-sidebar-groups";
-const DEFAULT_GROUPS: Groups = { wiki: true, book: false, chats: true };
+const DEFAULT_GROUPS: Groups = { wiki: true, book: false, lectures: false, chats: true };
 
 const ICON_PROPS = {
   width: 18,
@@ -53,6 +55,14 @@ const BookIcon = () => (
   <svg {...ICON_PROPS}>
     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
     <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+  </svg>
+);
+
+const LecturesIcon = () => (
+  <svg {...ICON_PROPS}>
+    <rect x="9" y="2" width="6" height="12" rx="3" />
+    <path d="M5 10a7 7 0 0 0 14 0" />
+    <line x1="12" y1="17" x2="12" y2="22" />
   </svg>
 );
 
@@ -197,6 +207,89 @@ function NavItem({
   );
 }
 
+// A page link with an expandable table of contents of its sections (the book,
+// the lectures). Section links scroll in place when already on that page;
+// from elsewhere they navigate and the page scrolls to the hash on load.
+function ContentsEntry({
+  href,
+  label,
+  icon,
+  sections,
+  open,
+  onToggle,
+  pathname,
+  currentSection,
+  expanded,
+  animate,
+}: {
+  href: string;
+  label: string;
+  icon: ReactNode;
+  sections: { id: string; title: string }[];
+  open: boolean;
+  onToggle: () => void;
+  pathname: string;
+  currentSection: string;
+  expanded: boolean;
+  animate: boolean;
+}) {
+  const onPage = pathname === href;
+
+  function goToSection(e: React.MouseEvent, id: string) {
+    if (!onPage) return;
+    e.preventDefault();
+    history.replaceState(null, "", id ? `#${id}` : href);
+    scrollToSection(id);
+  }
+
+  return (
+    <>
+      <div className="relative">
+        <NavItem
+          href={href}
+          label={label}
+          icon={icon}
+          active={onPage}
+          expanded={expanded}
+          onClick={(e) => goToSection(e, "")}
+        />
+        {expanded && sections.length > 0 && (
+          <button
+            onClick={onToggle}
+            aria-label={open ? "Hide contents" : "Show contents"}
+            aria-expanded={open}
+            className="absolute right-0 top-0 bottom-0 w-8 flex items-center justify-center rounded-r-lg text-text-muted hover:text-text-heading transition-colors cursor-pointer"
+          >
+            <Chevron open={open} />
+          </button>
+        )}
+      </div>
+      <Collapsible open={expanded && open} animate={animate}>
+        <div className="ml-[21px] my-1 pl-1.5 border-l border-border flex flex-col gap-0.5">
+          {sections.map((section) => {
+            const active = onPage && currentSection === section.id;
+            return (
+              <Link
+                key={section.id}
+                href={`${href}#${section.id}`}
+                onClick={(e) => goToSection(e, section.id)}
+                aria-current={active ? "location" : undefined}
+                className={`block pl-3.5 pr-3 py-1.5 rounded-lg text-sm leading-snug transition-colors ${
+                  active
+                    ? "text-text-heading bg-surface-hover font-medium"
+                    : "text-text-secondary hover:text-text-heading hover:bg-surface-hover"
+                }`}
+              >
+                {section.title}
+              </Link>
+            );
+          })}
+        </div>
+      </Collapsible>
+    </>
+  );
+}
+
 // Up/Down arrows move focus between the visible links and buttons in `root`.
 function handleArrowKeys(e: React.KeyboardEvent<HTMLElement>) {
   if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
@@ -232,7 +325,6 @@ export default function Sidebar() {
 
   // Labels show in the mobile drawer and in the full-width desktop sidebar.
   const expanded = isMobile || desktopOpen;
-  const onWiki = pathname === "/wiki";
 
   const fetchChats = useCallback(async () => {
     try {
@@ -273,7 +365,8 @@ export default function Sidebar() {
       saved = JSON.parse(localStorage.getItem(GROUPS_KEY) || "{}");
     } catch {}
     const next = { ...DEFAULT_GROUPS, ...saved };
-    if (pathname === "/wiki" || pathname === "/glossary") next.wiki = true;
+    if (pathname === "/wiki" || pathname === "/v50" || pathname === "/glossary") next.wiki = true;
+    if (pathname === "/v50") next.lectures = true;
     if (pathname === "/wiki" && (window.location.hash || loadPlace())) next.book = true;
     if (pathname.startsWith("/chat/") || pathname.startsWith("/questions")) next.chats = true;
     setGroups(next);
@@ -335,15 +428,6 @@ export default function Sidebar() {
     try {
       localStorage.setItem("cc-sidebar", next ? "open" : "collapsed");
     } catch {}
-  }
-
-  // Already on the wiki: scroll in place instead of navigating. From another
-  // page the link navigates and the wiki scrolls to the hash once it loads.
-  function goToSection(e: React.MouseEvent, id: string) {
-    if (!onWiki) return;
-    e.preventDefault();
-    history.replaceState(null, "", id ? `#${id}` : "/wiki");
-    scrollToSection(id);
   }
 
   async function handleDelete(chatId: string) {
@@ -409,48 +493,30 @@ export default function Sidebar() {
             <GroupHeader label="Wiki" open={groups.wiki} visible={expanded} onToggle={() => toggleGroup("wiki")} />
             {/* The narrow icon column always shows every group's icons. */}
             <Collapsible open={!expanded || groups.wiki} animate={groupsLoaded}>
-              <div className="relative">
-                <NavItem
-                  href="/wiki"
-                  label="Common Cents"
-                  icon={<BookIcon />}
-                  active={onWiki}
-                  expanded={expanded}
-                  onClick={(e) => goToSection(e, "")}
-                />
-                {expanded && sections.length > 0 && (
-                  <button
-                    onClick={() => toggleGroup("book")}
-                    aria-label={groups.book ? "Hide contents" : "Show contents"}
-                    aria-expanded={groups.book}
-                    className="absolute right-0 top-0 bottom-0 w-8 flex items-center justify-center rounded-r-lg text-text-muted hover:text-text-heading transition-colors cursor-pointer"
-                  >
-                    <Chevron open={groups.book} />
-                  </button>
-                )}
-              </div>
-              <Collapsible open={expanded && groups.book} animate={groupsLoaded}>
-                <div className="ml-[21px] my-1 pl-1.5 border-l border-border flex flex-col gap-0.5">
-                  {sections.map((section) => {
-                    const active = onWiki && currentSection === section.id;
-                    return (
-                      <Link
-                        key={section.id}
-                        href={`/wiki#${section.id}`}
-                        onClick={(e) => goToSection(e, section.id)}
-                        aria-current={active ? "location" : undefined}
-                        className={`block pl-3.5 pr-3 py-1.5 rounded-lg text-sm leading-snug transition-colors ${
-                          active
-                            ? "text-text-heading bg-surface-hover font-medium"
-                            : "text-text-secondary hover:text-text-heading hover:bg-surface-hover"
-                        }`}
-                      >
-                        {section.title}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </Collapsible>
+              <ContentsEntry
+                href="/wiki"
+                label="Common Cents"
+                icon={<BookIcon />}
+                sections={sections}
+                open={groups.book}
+                onToggle={() => toggleGroup("book")}
+                pathname={pathname}
+                currentSection={currentSection}
+                expanded={expanded}
+                animate={groupsLoaded}
+              />
+              <ContentsEntry
+                href="/v50"
+                label="V50 Lectures"
+                icon={<LecturesIcon />}
+                sections={LECTURES}
+                open={groups.lectures}
+                onToggle={() => toggleGroup("lectures")}
+                pathname={pathname}
+                currentSection={currentSection}
+                expanded={expanded}
+                animate={groupsLoaded}
+              />
               <NavItem href="/glossary" label="Glossary" icon={<GlossaryIcon />} active={pathname === "/glossary"} expanded={expanded} />
             </Collapsible>
           </div>

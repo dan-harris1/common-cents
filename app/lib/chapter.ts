@@ -50,10 +50,14 @@ export async function loadSections(): Promise<ChapterSection[]> {
   return tagSections(doc.body);
 }
 
-// Scrolls the wiki to a section, or to the top of the chapter when id is empty.
+// Scrolls the page to a section, or back to the top when id is empty.
 export function scrollToSection(id: string, smooth = true) {
-  const el = id ? document.getElementById(id) : document.querySelector(".wiki-content");
-  el?.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
+  const behavior = smooth ? "smooth" : "auto";
+  if (id) {
+    document.getElementById(id)?.scrollIntoView({ behavior, block: "start" });
+  } else {
+    document.getElementById("main-content")?.scrollTo({ top: 0, behavior });
+  }
 }
 
 // The section the reader is currently in. The wiki updates it while scrolling

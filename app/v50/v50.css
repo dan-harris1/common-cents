@@ -1,0 +1,31 @@
+/* The lectures use the wiki's styles (wiki.css). These rules only cover the
+   few classes the Common Cents chapter doesn't have. */
+
+/* Each part is a "Part N" line (eBook_Chapter-Name) followed by its title
+   (also eBook_Chapter-Name); keep the pair together as one heading. */
+.v50-content .eBook_Chapter-Name.Chapter-Title {
+  margin-top: 0;
+}
+
+/* Concept terms, set bold in the source. */
+.v50-content .Sidebar-Concept {
+  font-weight: 700;
+}
+
+/* Cross-references to concept definitions, styled like the wiki's glossary links. */
+.v50-content a.xref[href] {
+  color: #60a5fa;
+  text-decoration: none;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.v50-content a.xref[href]:hover {
+  text-decoration: underline;
+}
+
+/* Lecture syllogisms are full sentences, so they wrap instead of running off
+   the page as one line. */
+.v50-content .Sidebar_Syllogism {
+  white-space: pre-wrap;
+}

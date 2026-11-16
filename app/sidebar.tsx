@@ -12,7 +12,7 @@ import {
   loadPlace,
   type ChapterSection,
 } from "./lib/chapter";
-import { LECTURES } from "./lib/lectures";
+import { loadLectureSections } from "./lib/lectures";
 
 interface ChatEntry {
   id: string;
@@ -316,6 +316,7 @@ export default function Sidebar() {
   const [groups, setGroups] = useState<Groups>(DEFAULT_GROUPS);
   const [groupsLoaded, setGroupsLoaded] = useState(false);
   const [sections, setSections] = useState<ChapterSection[]>([]);
+  const [lectureSections, setLectureSections] = useState<ChapterSection[]>([]);
   const [currentSection, setCurrentSection] = useState("");
   const [chats, setChats] = useState<ChatEntry[]>([]);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
@@ -377,6 +378,7 @@ export default function Sidebar() {
 
   useEffect(() => {
     loadSections().then(setSections).catch(() => {});
+    loadLectureSections().then(setLectureSections).catch(() => {});
     setCurrentSection(getCurrentSection());
     function onSection(e: Event) {
       setCurrentSection((e as CustomEvent<string>).detail);
@@ -509,7 +511,7 @@ export default function Sidebar() {
                 href="/v50"
                 label="V50 Lectures"
                 icon={<LecturesIcon />}
-                sections={LECTURES}
+                sections={lectureSections}
                 open={groups.lectures}
                 onToggle={() => toggleGroup("lectures")}
                 pathname={pathname}
